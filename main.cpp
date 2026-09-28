@@ -104,7 +104,8 @@ int main()
 			render_window.draw(sprite);
 			if (zoom <= .2f)
 				{
-				//render_window.draw(pixels_grid);
+				//Bug does not happen if either this or imgui code is commented out
+				render_window.draw(pixels_grid);
 				}
 
 			ImGui::SFML::Render(render_window);
