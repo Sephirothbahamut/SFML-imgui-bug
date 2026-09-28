@@ -17,14 +17,6 @@ void process_event(const sf::Event& event, const callback_t& callback)
 		}
 	}
 
-void apply_zoom(float zoom, sf::RenderTarget& render_target) noexcept
-	{
-	const auto viewport_size{static_cast<sf::Vector2f>(render_target.getSize())};
-	auto view{render_target.getView()};
-	view.setSize(viewport_size * zoom);
-	render_target.setView(view);
-	}
-
 sf::VertexArray create_pixels_grid(const sf::Texture& texture) noexcept
 	{
 	//const auto texture_size{texture.getSize()};
@@ -71,19 +63,20 @@ int main()
 
 	if (!ImGui::SFML::Init(render_window)) { throw std::runtime_error{"ImGui SFML error, could not update font texture."}; }
 
-	float zoom{1.f};
+	bool draw_vertices_array{false};
 	while (render_window.isOpen())
 		{
 		if (const auto event_opt{render_window.waitEvent()})
 			{
 			const auto& event{*event_opt};
 			process_event<sf::Event::Closed >(event, [&](const auto& event) { render_window.close(); });
-			process_event<sf::Event::Resized>(event, [&](const auto& event) { apply_zoom(zoom, render_window); });
-			process_event<sf::Event::MouseWheelScrolled>(event, [&](const auto& event)
+			process_event<sf::Event::KeyPressed>(event, [&](const auto& event)
 				{
-				zoom += zoom * .1f * -event.delta;
-				zoom = std::clamp(zoom, 0.1f, 2.f);
-				apply_zoom(zoom, render_window);
+				draw_vertices_array = true;
+				});
+			process_event<sf::Event::KeyReleased>(event, [&](const auto& event)
+				{
+				draw_vertices_array = false;
 				});
 
 			ImGui::SFML::ProcessEvent(render_window, event);
@@ -102,7 +95,8 @@ int main()
 			{
 			render_window.clear();
 			render_window.draw(sprite);
-			if (zoom <= .2f)
+
+			if (draw_vertices_array)
 				{
 				//Bug does not happen if either this or imgui code is commented out
 				render_window.draw(pixels_grid);
