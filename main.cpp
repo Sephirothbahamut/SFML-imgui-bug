@@ -27,26 +27,30 @@ void apply_zoom(float zoom, sf::RenderTarget& render_target) noexcept
 
 sf::VertexArray create_pixels_grid(const sf::Texture& texture) noexcept
 	{
-	const auto texture_size{texture.getSize()};
-	const sf::Vector2u lines{texture_size.x + 1, texture_size.y + 1};
-	sf::VertexArray vertices_array{sf::PrimitiveType::Lines, (lines.x * 2) + (lines.y * 2)};
-	std::cout << "Vertices count: " << vertices_array.getVertexCount() << "\n";
-
-	for (unsigned int x{0}; x < lines.x; x++)
-		{
-		vertices_array[(x * 2) + 0].position = {static_cast<float>(x), static_cast<float>(0)};
-		vertices_array[(x * 2) + 1].position = {static_cast<float>(x), static_cast<float>(lines.y)};
-		}
-	const auto y_base_index{lines.x * 2};
-	for (unsigned int y{0}; y < lines.y; y++)
-		{
-		vertices_array[y_base_index + (y * 2) + 0].position = {static_cast<float>(0), static_cast<float>(y)};
-		vertices_array[y_base_index + (y * 2) + 1].position = {static_cast<float>(lines.x), static_cast<float>(y)};
-		}
-	for (auto& vertex : vertices_array)
-		{
-		vertex.color = {230, 240, 255, 80};
-		}
+	//const auto texture_size{texture.getSize()};
+	//const sf::Vector2u lines{texture_size.x + 1, texture_size.y + 1};
+	//sf::VertexArray vertices_array{sf::PrimitiveType::Lines, (lines.x * 2) + (lines.y * 2)};
+	//std::cout << "Vertices count: " << vertices_array.getVertexCount() << "\n";
+	//
+	//for (unsigned int x{0}; x < lines.x; x++)
+	//	{
+	//	vertices_array[(x * 2) + 0].position = {static_cast<float>(x), static_cast<float>(0)};
+	//	vertices_array[(x * 2) + 1].position = {static_cast<float>(x), static_cast<float>(lines.y)};
+	//	}
+	//const auto y_base_index{lines.x * 2};
+	//for (unsigned int y{0}; y < lines.y; y++)
+	//	{
+	//	vertices_array[y_base_index + (y * 2) + 0].position = {static_cast<float>(0), static_cast<float>(y)};
+	//	vertices_array[y_base_index + (y * 2) + 1].position = {static_cast<float>(lines.x), static_cast<float>(y)};
+	//	}
+	//for (auto& vertex : vertices_array)
+	//	{
+	//	vertex.color = {230, 240, 255, 80};
+	//	}
+	//return vertices_array;
+	sf::VertexArray vertices_array{sf::PrimitiveType::Lines, 2};
+	vertices_array[0].position = {0.f, 0.f};
+	vertices_array[1].position = {100.f, 100.f};
 	return vertices_array;
 	}
 
@@ -66,7 +70,6 @@ int main()
 	sf::Clock clock;
 
 	if (!ImGui::SFML::Init(render_window)) { throw std::runtime_error{"ImGui SFML error, could not update font texture."}; }
-
 
 	float zoom{1.f};
 	while (render_window.isOpen())
@@ -90,19 +93,9 @@ int main()
 			{
 			ImGui::SFML::Update(render_window, clock.restart());
 
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->WorkPos);
-			ImGui::SetNextWindowSizeConstraints({32.f, viewport->WorkSize.y}, {viewport->WorkSize.x - 32.f, viewport->WorkSize.y});
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-			ImGuiWindowFlags flags{ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus};
-
-			ImGui::Begin("##Main", 0, flags);
+			ImGui::Begin("##Main", 0, ImGuiWindowFlags_None);
 			ImGui::Text("Text");
 			ImGui::End();
-
-			ImGui::PopStyleVar(2);
 			}
 
 		if (true)//Draw
@@ -111,7 +104,7 @@ int main()
 			render_window.draw(sprite);
 			if (zoom <= .2f)
 				{
-				render_window.draw(pixels_grid);
+				//render_window.draw(pixels_grid);
 				}
 
 			ImGui::SFML::Render(render_window);
