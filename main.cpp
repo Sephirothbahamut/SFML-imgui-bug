@@ -55,10 +55,6 @@ int main()
 
 	sf::RenderWindow render_window{sf::VideoMode{{800, 600}}, "Pixel grid"};
 
-	auto view{render_window.getView()};
-	view.setCenter(static_cast<sf::Vector2f>(texture.getSize() / 2u));
-	render_window.setView(view);
-
 	sf::Clock clock;
 
 	if (!ImGui::SFML::Init(render_window)) { throw std::runtime_error{"ImGui SFML error, could not update font texture."}; }
