@@ -1,4 +1,4 @@
-#include <iostream>
+#include <format>
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
@@ -17,88 +17,88 @@ void process_event(const sf::Event& event, const callback_t& callback)
 		}
 	}
 
-sf::VertexArray create_pixels_grid(const sf::Texture& texture) noexcept
+bool draw_vertices_array{false};
+bool use_push_gl_state  {false};
+bool draw_imgui         {false};
+
+std::string window_title() noexcept
 	{
-	//const auto texture_size{texture.getSize()};
-	//const sf::Vector2u lines{texture_size.x + 1, texture_size.y + 1};
-	//sf::VertexArray vertices_array{sf::PrimitiveType::Lines, (lines.x * 2) + (lines.y * 2)};
-	//std::cout << "Vertices count: " << vertices_array.getVertexCount() << "\n";
-	//
-	//for (unsigned int x{0}; x < lines.x; x++)
-	//	{
-	//	vertices_array[(x * 2) + 0].position = {static_cast<float>(x), static_cast<float>(0)};
-	//	vertices_array[(x * 2) + 1].position = {static_cast<float>(x), static_cast<float>(lines.y)};
-	//	}
-	//const auto y_base_index{lines.x * 2};
-	//for (unsigned int y{0}; y < lines.y; y++)
-	//	{
-	//	vertices_array[y_base_index + (y * 2) + 0].position = {static_cast<float>(0), static_cast<float>(y)};
-	//	vertices_array[y_base_index + (y * 2) + 1].position = {static_cast<float>(lines.x), static_cast<float>(y)};
-	//	}
-	//for (auto& vertex : vertices_array)
-	//	{
-	//	vertex.color = {230, 240, 255, 80};
-	//	}
-	//return vertices_array;
-	sf::VertexArray vertices_array{sf::PrimitiveType::Lines, 2};
-	vertices_array[0].position = {0.f, 0.f};
-	vertices_array[1].position = {100.f, 100.f};
-	return vertices_array;
+	return std::format("draw_vertices_array [Q]: {}, use_push_gl_state [W]: {}, draw_imgui [E]: {}", draw_vertices_array, use_push_gl_state, draw_imgui);
 	}
 
 int main()
 	{
-	//Prepare image to display
-	sf::Texture texture{"test.png"};
-	sf::Sprite sprite{texture};
-	sf::VertexArray pixels_grid{create_pixels_grid(texture)};
+	const sf::Texture texture{"test.png"};
+	const sf::Sprite sprite  {texture   };
 
-	sf::RenderWindow render_window{sf::VideoMode{{800, 600}}, "Pixel grid"};
+	const sf::VertexArray vertices_array{[]()
+		{
+		sf::VertexArray ret{sf::PrimitiveType::Lines, 2};
+		ret[0].position = {  0.f,   0.f};
+		ret[1].position = {100.f, 100.f};
+		return ret;
+		}()};
+
+	sf::RenderWindow render_window{sf::VideoMode{{800, 600}}, window_title()};
 
 	sf::Clock clock;
 
 	if (!ImGui::SFML::Init(render_window)) { throw std::runtime_error{"ImGui SFML error, could not update font texture."}; }
 
-	bool draw_vertices_array{false};
+
 	while (render_window.isOpen())
 		{
 		if (const auto event_opt{render_window.waitEvent()})
 			{
 			const auto& event{*event_opt};
-			process_event<sf::Event::Closed >(event, [&](const auto& event) { render_window.close(); });
+			process_event<sf::Event::Closed    >(event, [&](const auto& event) { render_window.close(); });
 			process_event<sf::Event::KeyPressed>(event, [&](const auto& event)
 				{
-				draw_vertices_array = true;
-				});
-			process_event<sf::Event::KeyReleased>(event, [&](const auto& event)
-				{
-				draw_vertices_array = false;
+				if (event.code == sf::Keyboard::Key::Q) { draw_vertices_array = !draw_vertices_array; }
+				if (event.code == sf::Keyboard::Key::W) { use_push_gl_state   = !use_push_gl_state  ; }
+				if (event.code == sf::Keyboard::Key::E) { draw_imgui          = !draw_imgui         ; }
+				render_window.setTitle(window_title());
 				});
 
 			ImGui::SFML::ProcessEvent(render_window, event);
 			}
 
-		if (true)//Step
+		//Step
 			{
-			ImGui::SFML::Update(render_window, clock.restart());
+			if (draw_imgui)
+				{
+				ImGui::SFML::Update(render_window, clock.restart());
+				}
 
-			ImGui::Begin("##Main", 0, ImGuiWindowFlags_None);
-			ImGui::Text("Text");
-			ImGui::End();
+			//ImGui::Begin("##Main", 0, ImGuiWindowFlags_None);
+			//ImGui::End();
 			}
 
-		if (true)//Draw
+		//Draw
 			{
 			render_window.clear();
+
+			if (use_push_gl_state) 
+				{
+				render_window.pushGLStates(); 
+				}
+			
 			render_window.draw(sprite);
 
 			if (draw_vertices_array)
 				{
-				//Bug does not happen if either this or imgui code is commented out
-				render_window.draw(pixels_grid);
+				render_window.draw(vertices_array);
 				}
 
-			ImGui::SFML::Render(render_window);
+			if (use_push_gl_state)
+				{
+				render_window.popGLStates();
+				}
+
+			if (draw_imgui)
+				{
+				ImGui::SFML::Render(render_window);
+				}
 			render_window.display();
 			}
 		}

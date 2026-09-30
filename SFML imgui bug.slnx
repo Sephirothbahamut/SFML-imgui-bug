@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="SFML imgui bug.vcxproj" />
+  <Project Path="SFML imgui bug.vcxproj" Id="30417a0d-379f-4c6c-b621-f61a5e3f6139" />
 </Solution>
